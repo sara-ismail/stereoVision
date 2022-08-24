@@ -69,7 +69,7 @@ class StereoCamera:
                 # no T-API use, unless additional code changes later
 
                 import camera_stream
-                self.camZED = camera_stream.CameraVideoStream()
+                self.camZED = camera_stream.CameraVideoStream(0)
 
             except BaseException:
                 # if not then just use OpenCV default
@@ -98,9 +98,9 @@ class StereoCamera:
 
             # by default two standard system connected cams from the default
             # video backend
-
-            self.camL = cv2.VideoCapture()
-            self.camR = cv2.VideoCapture()
+            import camera_stream
+            self.camL = camera_stream.CameraVideoStream()
+            self.camR = camera_stream.CameraVideoStream()
             if not(
                 (self.camL.open(
                     args.camera_to_use)) and (
