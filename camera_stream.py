@@ -109,9 +109,13 @@ class CameraVideoStream:
 
         self.tapi = use_tapi
 
-        # if a source was specified at init, proceed to open device
+        # if a source was specified at init, proceed to open device,
+        # otherwise; stream the Theta pipeline
+        
         if not(src is None):
             self.open(src)
+        else:
+            self.openTheta()
 
     def open(self, src=0):
 
@@ -122,6 +126,34 @@ class CameraVideoStream:
         # initialize the video camera stream and read the first frame
         # from the stream
         self.camera = cv2.VideoCapture(src)
+        (self.grabbed, self.frame) = self.camera.read()
+
+        # only start the thread if in-fact the camera read was successful
+        if (self.grabbed):
+            # create the thread to read frames from the video stream
+            thread = Thread(target=self.update, name=self.name, args=())
+
+            #  append thread to global array of threads
+            threadList.append(thread)
+
+            # get thread id we will use to address thread on list
+            self.threadID = len(threadList) - 1
+
+            # start thread and set it to run in background
+            threadList[self.threadID].daemon = True
+            threadList[self.threadID].start()
+
+        return (self.grabbed > 0)
+
+    def openTheta(self):
+
+        # check if aleady opened via init method
+        if (self.grabbed > 0):
+            return True
+
+        # initialize the video camera stream and read the first frame
+        # from the stream
+        self.camera = cv2.VideoCapture("thetauvcsrc ! decodebin ! autovideoconvert ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink")
         (self.grabbed, self.frame) = self.camera.read()
 
         # only start the thread if in-fact the camera read was successful
