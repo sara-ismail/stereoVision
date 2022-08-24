@@ -141,9 +141,9 @@ class StereoCamera:
             # then retrieve the images in slow(er) time
             # (do not be tempted to use read() !)
 
-            _, frameL = self.camL.retrieve()
+            _, frameLf = self.camL.retrieve()
             _, frameR = self.camR.retrieve()
-
+            frameL = cv2.flip(frameLf, -1) #to work with the setup of having one of the cameras upside down
         return frameL, frameR
 
 #####################################################################
