@@ -1,7 +1,8 @@
 import cv2
+import camera_stream
 
-cap = cv2.VideoCapture("thetauvcsrc ! decodebin ! autovideoconvert ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink")
-cap2 = cv2.VideoCapture("thetauvcsrc ! decodebin ! autovideoconvert ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink")
+cap = camera_stream.CameraVideoStream()
+cap2 = camera_stream.CameraVideoStream()
 
 cv2.namedWindow("Stream 1", cv2.WINDOW_NORMAL)
 cv2.namedWindow("Stream 2", cv2.WINDOW_NORMAL)
