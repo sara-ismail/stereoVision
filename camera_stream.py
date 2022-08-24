@@ -90,7 +90,7 @@ atexit.register(closeDownAllThreadsCleanly)
 
 
 class CameraVideoStream:
-    def __init__(self, src=None, backend=None,
+    def __init__(self, src=None,
                  name="CameraVideoStream", use_tapi=False):
 
         # initialize the thread name
@@ -109,27 +109,11 @@ class CameraVideoStream:
 
         self.tapi = use_tapi
 
-        # set some sensible backends for real-time video capture from
-        # directly connected hardware on a per-OS basis,
-        # that can we overidden via the open() method
-        if sys.platform.startswith('linux'):        # all Linux
-            self.backend_default = cv2.CAP_V4L
-        elif sys.platform.startswith('win'):        # MS Windows
-            self.backend_default = cv2.CAP_DSHOW
-        elif sys.platform.startswith('darwin'):     # macOS
-            self.backend_default = cv2.CAP_AVFOUNDATION
-        else:
-            self.backend_default = cv2.CAP_ANY      # auto-detect via OpenCV
-
         # if a source was specified at init, proceed to open device
         if not(src is None):
-            self.open(src, backend)
+            self.open(src)
 
-    def open(self, src=0, backend=None):
-
-        # determine backend to specified by user
-        if (backend is None):
-            backend = self.backend_default
+    def open(self, src=0):
 
         # check if aleady opened via init method
         if (self.grabbed > 0):
@@ -137,7 +121,7 @@ class CameraVideoStream:
 
         # initialize the video camera stream and read the first frame
         # from the stream
-        self.camera = cv2.VideoCapture(src, backend)
+        self.camera = cv2.VideoCapture(src)
         (self.grabbed, self.frame) = self.camera.read()
 
         # only start the thread if in-fact the camera read was successful
@@ -224,11 +208,6 @@ class CameraVideoStream:
         # get a video capture property (behavior as per OpenCV manual for
         # VideoCapture)
         return self.camera.get(property_name)
-
-    def getBackendName(self):
-        # get a video capture backend (behavior as per OpenCV manual for
-        # VideoCapture)
-        return self.camera.getBackendName()
 
     def getExceptionMode(self):
         # get a video capture exception mode (behavior as per OpenCV manual for
