@@ -172,20 +172,20 @@ parser.add_argument(
     type=int,
     help="specify number of internal chessboard squares (corners) \
             in x-direction",
-    default=6)
+    default=8)
 parser.add_argument(
     "-cby",
     "--chessboardy",
     type=int,
     help="specify number of internal chessboard squares (corners) \
         in y-direction",
-    default=9)
+    default=6)
 parser.add_argument(
     "-cbw",
     "--chessboardw",
     type=float,
     help="specify width/height of chessboard squares in mm",
-    default=40.0)
+    default=80.8)
 parser.add_argument(
     "-cp",
     "--calibration_path",
