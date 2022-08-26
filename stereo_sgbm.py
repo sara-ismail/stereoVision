@@ -722,11 +722,27 @@ cv2.namedWindow(window_nameD, cv2.WINDOW_NORMAL)
 height, width, channels = frameL.shape
 cv2.resizeWindow(window_nameD, width, height)
 
+# set up parameters to calculate fps
+
+prev_frame_time = 0
+new_frame_time = 0
+font = cv2.FONT_HERSHEY_SIMPLEX
+
 while (keep_processing):
 
     # get frames from camera
-
     frameL, frameR = stereo_camera.get_frames()
+
+    # calculate fps
+    new_frame_time = time.time()
+    fps = 1/(new_frame_time-prev_frame_time)
+    prev_frame_time = new_frame_time
+ 
+    # round up the fps float
+    # then turn to string (to work with putText)
+    fps = round(fps, 3)
+    fps = str(fps)
+    text = "Estimated frames per second: {0}".format(fps)
 
     # remember to convert to grayscale (as the disparity matching works on
     # grayscale)
@@ -758,6 +774,11 @@ while (keep_processing):
     _, disparity = cv2.threshold(
         disparity, 0, max_disparity * 16, cv2.THRESH_TOZERO)
     disparity_scaled = (disparity / 16.).astype(np.uint8)
+
+    # add text to stream
+
+    cv2.putText(undistorted_rectifiedL, text, (7, 70), font, 1, (255, 255, 255), 2)
+    cv2.putText(undistorted_rectifiedR, text, (7, 70), font, 1, (255, 255, 255), 2)
 
     # display image
 
