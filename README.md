@@ -43,15 +43,16 @@ cap2 = cv2.VideoCapture("Your gstremer pipeline")
 ```
 gst-launch-1.0 thetauvcsrc mode=4K ! queue ! h264parse ! nvv4l2decoder ! queue ! nv3dsink sync=false thetauvcsrc mode=4K ! queue ! h264parse ! nvv4l2decoder ! queue ! nv3dsink sync=false
 ```
-### camera_stream.py
+#### camera_stream.py
 Creats a class that handles each camera in a seperate thread
 -> Decreases latency on the cameras.
 
-### stream.py
+#### stream.py
 Used to simply read and stream two theta cameras using the CameraVideoStream threading class.
 
-### fps_calc.py
+#### fps_calc.py
 Calculates the Frames per Second rate of the cameras and displays it on the video stream.
 
-### stereo_sgbm.py
-Operates a step by step calibration of the cameras then creats and displays a live depth map.
+#### stereo_sgbm.py
+Operates a step by step calibration of the cameras then creats and displays a live depth map.  
+![Demo](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/Screenshot%20from%202022-08-25%2015-25-07.png "Demo")
