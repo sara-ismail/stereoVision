@@ -11,10 +11,12 @@ The most suitable RICOH THETA camera models for this job are the **THETA V/Z1**
   * NVIDIA Jetson Xavier
 
 ### Software:
-I followed the [RICOH THETA Development on Linux](https://codetricity.github.io/theta-linux/ "RICOH THETA Development on Linux")
+1. Install openCV for python and make sure it supports both gstreamer and CUDA 
+
+2. Follow the [RICOH THETA Development on Linux](https://codetricity.github.io/theta-linux/ "RICOH THETA Development on Linux")
 website to set up the software. 
 
-- I first tried to utilize v4l2loopback, however, the cameras couldn't stream through /dev/video,
+- I first tried to utilize v4l2loopback, however, the cameras couldn't stream through /dev/video on my device,
 so I went with [gstthetauvc](https://github.com/nickel110/gstthetauvc "gstthetauvc") instead.
 
 **NOTE:** the README.md file of the [gstthetauvc](https://github.com/nickel110/gstthetauvc "gstthetauvc") repo states that compiling libuvc is a prerequisite,  
