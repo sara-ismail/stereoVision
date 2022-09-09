@@ -29,6 +29,17 @@
 # available (i.e. camera_stream.py is in the module search path) and
 # falls back to using cv2.VideoCapture otherwise
 
+# use with other OpenCV video backends just explicitly pass the required
+# OpenCV flag as follows:
+#    ....
+#    import camera_stream
+#    cap = camera_stream.CameraVideoStream()
+#    ....
+#
+#    cap.open("your | gstreamer | pipeline", cv2.CAP_GSTREAMER)
+#
+# Ref: https://docs.opencv.org/4.x/d4/d15/group__videoio__flags__base.html
+
 # OpenCV T-API usage - alternative usage to enable OpenCV Transparent API
 # h/w acceleration where available on all subsequent processing of image
 # ....
@@ -44,6 +55,7 @@ from threading import Thread
 import cv2
 import sys
 import atexit
+import logging
 
 ##########################################################################
 
@@ -54,6 +66,15 @@ import atexit
 if ((majorCV <= '3') and (minorCV <= '4')):
     raise NameError('OpenCV version < 3.4,'
                     + ' not compatible with CameraVideoStream()')
+
+##########################################################################
+
+# set up logging
+
+log_level = logging.DEBUG  # change to .INFO / .DEBUG for useful info
+
+log_msg_format = '%(asctime)s - Thead ID: %(thread)d - %(message)s'
+logging.basicConfig(format=log_msg_format, level=log_level)
 
 ##########################################################################
 
@@ -90,7 +111,7 @@ atexit.register(closeDownAllThreadsCleanly)
 
 
 class CameraVideoStream:
-    def __init__(self, src=None,
+    def __init__(self, src=None, backend=None,
                  name="CameraVideoStream", use_tapi=False):
 
         # initialize the thread name
@@ -104,57 +125,60 @@ class CameraVideoStream:
         # set these to null values initially
         self.grabbed = 0
         self.frame = None
+        self.threadID = -1
+
+        # set the initial timestamps to zero
+        self.timestamp = 0
+        self.timestamp_last_read = 0
+
+        # set internal framecounters to -1
+        self.framecounter = -1
+        self.framecounter_last_read = -1
 
         # set OpenCV Transparent API usage
 
         self.tapi = use_tapi
 
-        # if a source was specified at init, proceed to open device,
-        # otherwise; stream the Theta pipeline
-        
-        if not(src is None):
-            self.open(src)
+        # set some sensible backends for real-time video capture from
+        # directly connected hardware on a per-OS basis,
+        # that can we overidden via the open() method
+        if sys.platform.startswith('linux'):        # all Linux
+            self.backend_default = cv2.CAP_V4L
+        elif sys.platform.startswith('win'):        # MS Windows
+            self.backend_default = cv2.CAP_DSHOW
+        elif sys.platform.startswith('darwin'):     # macOS
+            self.backend_default = cv2.CAP_AVFOUNDATION
         else:
-            self.openTheta()
+            self.backend_default = cv2.CAP_ANY      # auto-detect via OpenCV
 
-    def open(self, src=0):
+        # if a source was specified at init, proceed to open device
+        if not (src is None):
+            self.open(src, backend)
 
-        # check if aleady opened via init method
-        if (self.grabbed > 0):
-            return True
+    def open(self, src, backend=None):
 
-        # initialize the video camera stream and read the first frame
-        # from the stream
-        self.camera = cv2.VideoCapture(src)
-        (self.grabbed, self.frame) = self.camera.read()
-
-        # only start the thread if in-fact the camera read was successful
-        if (self.grabbed):
-            # create the thread to read frames from the video stream
-            thread = Thread(target=self.update, name=self.name, args=())
-
-            #  append thread to global array of threads
-            threadList.append(thread)
-
-            # get thread id we will use to address thread on list
-            self.threadID = len(threadList) - 1
-
-            # start thread and set it to run in background
-            threadList[self.threadID].daemon = True
-            threadList[self.threadID].start()
-
-        return (self.grabbed > 0)
-
-    def openTheta(self):
+        # determine backend to specified by user
+        if (backend is None):
+            backend = self.backend_default
 
         # check if aleady opened via init method
         if (self.grabbed > 0):
             return True
 
-        # initialize the video camera stream and read the first frame
-        # from the stream
-        self.camera = cv2.VideoCapture("thetauvcsrc ! decodebin ! autovideoconvert ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink")
+        # initialize the video camera stream
+        self.camera = cv2.VideoCapture(src, backend)
+
+        # when the backend is v4l (linux) set the buffer size to 1
+        # (as this is implemented for this backend and not others)
+        if (backend == cv2.CAP_V4L):
+            self.camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+        # read the first frame from the stream (and its timestamp)
         (self.grabbed, self.frame) = self.camera.read()
+        self.timestamp = self.camera.get(cv2.CAP_PROP_POS_MSEC)
+        self.framecounter += 1
+        logging.info("CAM %d - GRAB - frame %d @ time %f",
+                      self.threadID, self.framecounter, self.timestamp)
 
         # only start the thread if in-fact the camera read was successful
         if (self.grabbed):
@@ -184,10 +208,22 @@ class CameraVideoStream:
                 return
 
             # otherwise, read the next frame from the stream
-            # provided we are not suspended
+            # provided we are not suspended (and get timestamp)
 
-            if not(self.suspend):
-                (self.grabbed, self.frame) = self.camera.read()
+            if not (self.suspend):
+                self.camera.grab()
+                latest_timestamp = self.camera.get(cv2.CAP_PROP_POS_MSEC)
+                if (latest_timestamp > self.timestamp):
+                    (self.grabbed, self.frame) = self.camera.retrieve()
+                    self.framecounter += 1
+                    logging.info("CAM %d - GRAB - frame %d @ time %f",
+                                 self.threadID, self.framecounter, latest_timestamp)
+                    logging.debug("CAM %d - GRAB - inter-frame diff (ms) %f",
+                                  self.threadID, latest_timestamp - self.timestamp)
+                    self.timestamp = latest_timestamp
+                else:
+                    logging.info("CAM %d - GRAB - same timestamp skip %d",
+                                 self.threadID, latest_timestamp)
 
     def grab(self):
         # return status of most recent grab by the thread
@@ -198,6 +234,21 @@ class CameraVideoStream:
         return self.read()
 
     def read(self):
+
+        # remember the timestamp/count of the lastest image returned by read()
+        # so that subsequent calls to .get() can return the timestamp
+        # that is consistent with the last image the caller got via read()
+        frame_offset = (self.framecounter - self.framecounter_last_read)
+        self.timestamp_last_read = self.timestamp
+        self.framecounter_last_read = self.framecounter
+
+        for skip in range(1, frame_offset):
+            logging.info("CAM %d - SKIP - frame %d", self.threadID, self.framecounter_last_read
+                         - frame_offset + skip)
+
+        logging.info("CAM %d - READ - frame %d @ time %f",
+                      self.threadID, self.framecounter, self.timestamp)
+
         # return the frame most recently read
         if (self.tapi):
             # return OpenCV Transparent API UMat frame for H/W acceleration
@@ -230,6 +281,10 @@ class CameraVideoStream:
         # condition will exist between the thread's next call to update() after
         # it un-suspends and the next call to read() by the object user
         (self.grabbed, self.frame) = self.camera.read()
+        self.timestamp = self.camera.get(cv2.CAP_PROP_POS_MSEC)
+        self.framecounter += 1
+        logging.info("CAM %d - GRAB - frame %d @ time %f", self.threadID,
+                     self.framecounter, self.timestamp)
 
         # restart thread by unsuspending it
         self.suspend = False
@@ -237,9 +292,24 @@ class CameraVideoStream:
         return ret_val
 
     def get(self, property_name):
-        # get a video capture property (behavior as per OpenCV manual for
-        # VideoCapture)
+        # get a video capture property
+
+        # intercept calls to get the current timestamp or frame nunber
+        # of the frame and explicitly return that of the last image
+        # returned to the caller via read() or retrieve() from this object
+        if (property_name == cv2.CAP_PROP_POS_MSEC):
+            return self.timestamp_last_read
+        elif (property_name == cv2.CAP_PROP_POS_FRAMES):
+            return self.framecounter_last_read
+
+        # default to behavior as per OpenCV manual for
+        # VideoCapture()
         return self.camera.get(property_name)
+
+    def getBackendName(self):
+        # get a video capture backend (behavior as per OpenCV manual for
+        # VideoCapture)
+        return self.camera.getBackendName()
 
     def getExceptionMode(self):
         # get a video capture exception mode (behavior as per OpenCV manual for
