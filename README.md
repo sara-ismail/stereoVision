@@ -11,7 +11,9 @@ The most suitable RICOH THETA camera models for this job are the **THETA V/Z1**
   * NVIDIA Jetson Xavier
 
 ### Software:
-1. Install openCV for python and make sure it supports both gstreamer and CUDA 
+1. Install openCV for python and make sure it supports both gstreamer and CUDA  
+![Demo3](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo3.png "Demo3")
+![Demo4](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo4.png "Demo4")  
 
 2. Follow the [RICOH THETA Development on Linux](https://codetricity.github.io/theta-linux/ "RICOH THETA Development on Linux")
 website to set up the software. 
@@ -51,7 +53,10 @@ Before trying any of the following code files, beware that the cameras' setup us
 
 #### camera_stream.py
 Creates a class that handles each camera in a separate thread
--> Decreases latency on the cameras.
+-> Decreases latency on the cameras.  
+**Note:** in line ~74, change logging.CRITICAL to logging.INFO or logging.DEBUG for useful info  
+(e.g. timestamp, framecount, inter-frame difference):
+![Demo5](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo5.png "Demo5") 
 
 #### stream.py
 Used to simply read and stream two theta cameras using the CameraVideoStream threading class.
@@ -63,4 +68,4 @@ Calculates the Frames per Second rate of the cameras and displays it on the vide
 Operates a step by step calibration of the cameras then creates and displays a live depth map.  
 ![Demo1](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo1.png "Demo1")  
 
-**Note:** lines ~144-146 of this file flip the frames of one of the cameras, edit them according to your setup.
+**Note:** lines ~142-144 of this file flip the frames of one of the cameras, edit them according to your setup.
