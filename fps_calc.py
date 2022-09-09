@@ -18,6 +18,8 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 while(cap.isOpened() and cap2.isOpened()):
  
     ret, frame = cap.read()
+    frame = cv2.flip(framef, -1)
+
     ret2, frame2 = cap2.read()
 
     if not (ret or ret2):
