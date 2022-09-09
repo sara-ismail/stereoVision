@@ -26,12 +26,13 @@ import numpy as np
 import os
 import argparse
 import time
+import math
+import camera_stream
 
 #####################################################################
-# define target framerates in fps (may not be achieved)
+# define target framerates in fps (for calibration step only)
 
 calibration_capture_framerate = 2
-disparity_processing_framerate = 25
 
 #####################################################################
 # wrap different kinds of stereo camera - standard (v4l/vfw), ximea, ZED
@@ -102,11 +103,8 @@ class StereoCamera:
             self.camL = camera_stream.CameraVideoStream()
             self.camR = camera_stream.CameraVideoStream()
             if not(
-                (self.camL.open(
-                    args.camera_to_use)) and (
-                    self.camR.open(
-                        args.camera_to_use +
-                    2))):
+                (self.camL.open("thetauvcsrc ! decodebin ! autovideoconvert ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink", cv2.CAP_GSTREAMER)) and (
+                    self.camR.open("thetauvcsrc ! decodebin ! autovideoconvert ! video/x-raw,format=BGRx ! videoconvert ! video/x-raw,format=BGR ! appsink", cv2.CAP_GSTREAMER))):
                 print(
                     "Cannot open pair of system cameras connected \
                     starting at camera #:",
@@ -265,7 +263,7 @@ while (keep_processing):
 
     # start the event loop - essential
 
-    key = cv2.waitKey(40) & 0xFF  # wait 40ms (i.e. 1000ms / 25 fps = 40 ms)
+    key = cv2.waitKey(2) & 0xFF  # wait 40ms (i.e. 1000ms / 25 fps = 40 ms)
 
     # loop control - space to continue; x to exit; s - swap cams; l - load
 
@@ -495,6 +493,10 @@ if (chessboard_pattern_detections_paired > 0):  # i.e. if did not load calib.
 
 while (keep_processing):
 
+    # start a timer (to see how long processing only takes)
+
+    start_t = cv2.getTickCount()
+
     # get frames from camera
 
     frameL, frameR = stereo_camera.get_frames()
@@ -507,9 +509,15 @@ while (keep_processing):
     cv2.imshow(window_nameL, undistortedL)
     cv2.imshow(window_nameR, undistortedR)
 
+    # stop the timer and convert to ms. (to see how long processing and
+    # display takes)
+
+    stop_t = ((cv2.getTickCount() - start_t) /
+               cv2.getTickFrequency()) * 1000
+
     # start the event loop - essential
 
-    key = cv2.waitKey(int(1000 / disparity_processing_framerate)) & 0xFF
+    key = cv2.waitKey(max(2, 40 - int(math.ceil(stop_t)))) & 0xFF
 
     # loop control - space to continue; x to exit
 
@@ -662,6 +670,10 @@ if (chessboard_pattern_detections_paired > 0):  # i.e. if did not load calib.
 
 while (keep_processing):
 
+    # start a timer (to see how long processing only takes)
+
+    start_t = cv2.getTickCount()
+
     # get frames from camera
 
     frameL, frameR = stereo_camera.get_frames()
@@ -677,9 +689,15 @@ while (keep_processing):
     cv2.imshow(window_nameL, undistorted_rectifiedL)
     cv2.imshow(window_nameR, undistorted_rectifiedR)
 
+    # stop the timer and convert to ms. (to see how long processing and
+    # display takes)
+
+    stop_t = ((cv2.getTickCount() - start_t) /
+               cv2.getTickFrequency()) * 1000
+
     # start the event loop - essential
 
-    key = cv2.waitKey(int(1000 / disparity_processing_framerate)) & 0xFF
+    key = cv2.waitKey(max(2, 40 - int(math.ceil(stop_t)))) & 0xFF
 
     # loop control - space to continue; x to exit
 
@@ -729,6 +747,10 @@ new_frame_time = 0
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 while (keep_processing):
+
+    # start a timer (to see how long processing only takes)
+
+    start_t = cv2.getTickCount()
 
     # get frames from camera
     frameL, frameR = stereo_camera.get_frames()
@@ -798,9 +820,15 @@ while (keep_processing):
         cv2.imshow(window_nameD, (disparity_scaled *
                                   (256. / max_disparity)).astype(np.uint8))
 
+    # stop the timer and convert to ms. (to see how long processing and
+    # display takes)
+
+    stop_t = ((cv2.getTickCount() - start_t) /
+               cv2.getTickFrequency()) * 1000
+
     # start the event loop - essential
 
-    key = cv2.waitKey(int(1000 / disparity_processing_framerate)) & 0xFF
+    key = cv2.waitKey(max(2, 40 - int(math.ceil(stop_t)))) & 0xFF
 
     # loop control - x to exit
 
