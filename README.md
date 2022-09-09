@@ -54,6 +54,7 @@ Before trying any of the following code files, beware that the cameras' setup us
 #### camera_stream.py
 Creates a class that handles each camera in a separate thread
 -> Decreases latency on the cameras.  
+   
 **Note:** in line ~74, change logging.CRITICAL to logging.INFO or logging.DEBUG for useful info  
 (e.g. timestamp, framecount, inter-frame difference):
 ![Demo5](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo5.png "Demo5") 
