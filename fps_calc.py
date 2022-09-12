@@ -17,10 +17,13 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 while(cap.isOpened() and cap2.isOpened()):
  
-    ret, frame = cap.read()
+    ret, framef = cap.read()
     frame = cv2.flip(framef, -1)
 
     ret2, frame2 = cap2.read()
+
+    frame = cv2.resize(frame, (800, 400))
+    frame2 = cv2.resize(frame2, (800, 400))
 
     if not (ret or ret2):
         break
