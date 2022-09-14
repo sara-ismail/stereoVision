@@ -263,7 +263,7 @@ while (keep_processing):
 
     # start the event loop - essential
 
-    key = cv2.waitKey(2) & 0xFF  # wait 40ms (i.e. 1000ms / 25 fps = 40 ms)
+    key = cv2.waitKey(2) & 0xFF  # wait 2ms
 
     # loop control - space to continue; x to exit; s - swap cams; l - load
 
