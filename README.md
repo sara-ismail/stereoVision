@@ -62,15 +62,15 @@ Creates a class that handles each camera in a separate thread
 #### stream.py
 Used to simply read and stream two THETA cameras using the CameraVideoStream threading class.  
 ![Demo6](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo6.png "Demo6")  
-**Note:** lines ~14 flip the frames of one of the cameras, edit them according to your setup.  
+**Note:** line ~14 flips the frames of one of the cameras, edit them according to your setup.  
 
 #### fps_calc.py
 Calculates the Frames per Second rate of the cameras and displays it on the video stream.  
 ![Demo7](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo7.png "Demo7")  
-**Note:** lines ~21 flip the frames of one of the cameras, edit them according to your setup. 
+**Note:** line ~21 flips the frames of one of the cameras, edit them according to your setup. 
 
 #### stereo_sgbm.py
-Operates a step by step calibration of the cameras then creates and displays a live depth map.  
+Operates a step by step calibration of the cameras, then creates and displays a live depth map.  
 ![Demo1](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo1.png "Demo1")  
 
-**Note:** lines ~144 flip the frames of one of the cameras, edit them according to your setup.  
+**Note:** line ~144 flips the frames of one of the cameras, edit them according to your setup.  
