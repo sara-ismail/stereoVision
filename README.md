@@ -2,12 +2,12 @@
 The aim of this project is to research the possibility and potential of 360 stereo vision using RICOH THETA cameras.  
 
 ### Hardware:
-The most suitable RICOH THETA camera models for this job are the **THETA V/Z1**
+The most suitable RICOH THETA camera models for this job are the **THETA V / Z1**
 * *THETA S* is not suitable as it only streams 2 dual-fisheye views as motionJPEG
 * *THETA V or Z1* stream in equirectangular  
 
 **Used equipment:**  
-  * 2 THETA V/Z1 cameras for the stereo
+  * 2 THETA V cameras for the stereo
   * NVIDIA Jetson Xavier
 
 ### Software:
@@ -55,18 +55,22 @@ Before trying any of the following code files, beware that the cameras' setup us
 Creates a class that handles each camera in a separate thread
 -> Decreases latency on the cameras.  
    
-**Note:** in line ~74, change logging.CRITICAL to logging.INFO or logging.DEBUG for useful info  
+**Note:** in line ~74, change logging.CRITICAL to logging.INFO or logging.DEBUG for useful information  
 (e.g. timestamp, framecount, inter-frame difference):
 ![Demo5](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo5.png "Demo5") 
 
 #### stream.py
-Used to simply read and stream two theta cameras using the CameraVideoStream threading class.
+Used to simply read and stream two THETA cameras using the CameraVideoStream threading class.  
+![Demo6](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo6.png "Demo6")  
+**Note:** lines ~14 flip the frames of one of the cameras, edit them according to your setup.  
 
 #### fps_calc.py
-Calculates the Frames per Second rate of the cameras and displays it on the video stream.
+Calculates the Frames per Second rate of the cameras and displays it on the video stream.  
+![Demo7](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo7.png "Demo7")  
+**Note:** lines ~21 flip the frames of one of the cameras, edit them according to your setup. 
 
 #### stereo_sgbm.py
 Operates a step by step calibration of the cameras then creates and displays a live depth map.  
 ![Demo1](https://github.com/sara-ismail/stereoVision/blob/main/Demo_ss/demo1.png "Demo1")  
 
-**Note:** lines ~142-144 of this file flip the frames of one of the cameras, edit them according to your setup.
+**Note:** lines ~144 flip the frames of one of the cameras, edit them according to your setup.  
